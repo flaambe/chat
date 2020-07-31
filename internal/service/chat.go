@@ -19,10 +19,10 @@ func NewChatService(u repository.UserRepository, c repository.ChatRepository, m 
 func (c *ChatService) AddUser(user view.NewUserRequest) (view.NewUserResponse, error) {
 	userId, err := c.userRepo.InsertUser(user.UserName)
 	if err != nil {
-		return view.NewUserResponse{}, nil
+		return view.NewUserResponse{}, err
 	}
 
-	return view.NewUserResponse{ID: userId}, err
+	return view.NewUserResponse{ID: userId}, nil
 }
 
 func (c *ChatService) AddChat(chat view.NewChatRequest) (view.NewChatResponse, error) {
@@ -105,7 +105,7 @@ func (c *ChatService) GetChats(chats view.ChatsRequest) (view.ChatsResponse, err
 	return chatsView, nil
 }
 
-func (c *ChatService) GetMessages(chat view.ChatRequest) (view.MessagesResponse, error) {
+func (c *ChatService) GetMessages(chat view.MessagesRequest) (view.MessagesResponse, error) {
 	var messagesView []view.Message
 
 	chatModel, err := c.chatRepo.FindChatByID(chat.СhatID)

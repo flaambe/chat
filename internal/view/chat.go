@@ -21,7 +21,7 @@ type ChatsRequest struct {
 	UserID string `json:"user"`
 }
 
-type ChatRequest struct {
+type MessagesRequest struct {
 	СhatID string `json:"chat"`
 }
 

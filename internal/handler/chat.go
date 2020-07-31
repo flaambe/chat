@@ -13,7 +13,7 @@ type ChatService interface {
 	AddChat(chat view.NewChatRequest) (view.NewChatResponse, error)
 	AddMessage(message view.NewMessageRequest) (view.NewMessageResponse, error)
 	GetChats(chats view.ChatsRequest) (view.ChatsResponse, error)
-	GetMessages(chat view.ChatRequest) (view.MessagesResponse, error)
+	GetMessages(messages view.MessagesRequest) (view.MessagesResponse, error)
 }
 
 type ChatHandler struct {
@@ -123,7 +123,7 @@ func (c *ChatHandler) GetChats(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *ChatHandler) GetMessages(w http.ResponseWriter, r *http.Request) {
-	var body view.ChatRequest
+	var body view.MessagesRequest
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		log.Fatal(err)
 	}
