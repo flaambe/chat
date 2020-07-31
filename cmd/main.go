@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/flaambe/avito/internal/handler"
@@ -15,16 +16,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-const (
-	mongoURI string = "mongodb://localhost:27017"
-	dbName   string = "avito"
-)
-
 func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(os.Getenv("MONGO_URI")))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -35,7 +31,7 @@ func main() {
 	}
 	log.Println("Database connected")
 
-	db := client.Database(dbName)
+	db := client.Database(os.Getenv("DB_NAME"))
 
 	userRepo := repository.NewUserRepository(db)
 	chatRepo := repository.NewChatRepository(db)
@@ -49,5 +45,7 @@ func main() {
 	http.HandleFunc("/messages/add", chatHandler.AddMessage)
 	http.HandleFunc("/messages/get", chatHandler.GetMessages)
 
-	http.ListenAndServe(":9000", nil)
+	if err := http.ListenAndServe(os.Getenv("PORT"), nil); err != nil {
+		log.Fatal(err)
+	}
 }

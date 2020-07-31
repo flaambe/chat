@@ -8,13 +8,12 @@ BINARY_NAME=chatserver
     
 all: test build
 build: 
-	$(GOBUILD) -o $(GOBIN)/$(BINARY_NAME) -v
+	$(GOBUILD) -o $(GOBIN)/$(BINARY_NAME) -v ./cmd
 test:
 	$(GOTEST) ./...
 clean:
 	$(GOCLEAN)
-	rm -f $(GOBIN)/$(BINARY_NAME)
+	rm -rf $(GOBIN)
 run:
-	$(GOBUILD) -o $(BINARY_NAME) ./...
-	./$(BINARY_NAME)
+	$(GOBIN)/$(BINARY_NAME)
     
