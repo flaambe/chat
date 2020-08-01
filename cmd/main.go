@@ -45,7 +45,7 @@ func main() {
 	http.HandleFunc("/messages/add", chatHandler.AddMessage)
 	http.HandleFunc("/messages/get", chatHandler.GetMessages)
 
-	if err := http.ListenAndServe(os.Getenv("PORT"), nil); err != nil {
+	if err := http.ListenAndServe(":"+os.Getenv("PORT"), nil); err != nil {
 		log.Fatal(err)
 	}
 }

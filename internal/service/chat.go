@@ -3,17 +3,32 @@ package service
 import (
 	"github.com/flaambe/avito/internal/errs"
 	"github.com/flaambe/avito/internal/model"
-	"github.com/flaambe/avito/internal/repository"
 	"github.com/flaambe/avito/internal/view"
 )
 
-type ChatService struct {
-	userRepo    repository.UserRepository
-	chatRepo    repository.ChatRepository
-	messageRepo repository.MessageRepository
+type UserRepository interface {
+	FindUserByID(id string) (model.User, error)
+	InsertUser(name string) (string, error)
 }
 
-func NewChatService(u repository.UserRepository, c repository.ChatRepository, m repository.MessageRepository) *ChatService {
+type ChatRepository interface {
+	FindChatByID(id string) (model.Chat, error)
+	FindChats(user model.User) ([]model.Chat, error)
+	InsertChat(name string, users []model.User) (string, error)
+}
+
+type MessageRepository interface {
+	FindMessages(chat model.Chat) ([]model.Message, error)
+	InsertMessage(chat model.Chat, user model.User, text string) (string, error)
+}
+
+type ChatService struct {
+	userRepo    UserRepository
+	chatRepo    ChatRepository
+	messageRepo MessageRepository
+}
+
+func NewChatService(u UserRepository, c ChatRepository, m MessageRepository) *ChatService {
 	return &ChatService{u, c, m}
 }
 

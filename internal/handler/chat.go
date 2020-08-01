@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"github.com/flaambe/avito/internal/errs"
-
 	"github.com/flaambe/avito/internal/view"
 )
 
