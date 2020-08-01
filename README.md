@@ -1,3 +1,5 @@
+![Build](https://github.com/flaambe/chat/workflows/Go/badge.svg?branch=master)
+
 # Chat server
 Simple chat server with **Go** and **MongoDB**
 
