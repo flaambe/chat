@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/flaambe/avito/internal/handler"
@@ -39,13 +41,46 @@ func main() {
 	chatService := service.NewChatService(userRepo, chatRepo, messageRepo)
 	chatHandler := handler.NewChatHandler(chatService)
 
-	http.HandleFunc("/users/add", chatHandler.AddUser)
-	http.HandleFunc("/chats/add", chatHandler.AddChat)
-	http.HandleFunc("/chats/get", chatHandler.GetChats)
-	http.HandleFunc("/messages/add", chatHandler.AddMessage)
-	http.HandleFunc("/messages/get", chatHandler.GetMessages)
+	serveMux := http.NewServeMux()
+	serveMux.HandleFunc("/users/add", chatHandler.AddUser)
+	serveMux.HandleFunc("/chats/add", chatHandler.AddChat)
+	serveMux.HandleFunc("/chats/get", chatHandler.GetChats)
+	serveMux.HandleFunc("/messages/add", chatHandler.AddMessage)
+	serveMux.HandleFunc("/messages/get", chatHandler.GetMessages)
 
-	if err := http.ListenAndServe(":"+os.Getenv("PORT"), nil); err != nil {
+	srv := &http.Server{
+		Addr:         ":" + os.Getenv("PORT"),
+		WriteTimeout: time.Second * 15,
+		ReadTimeout:  time.Second * 15,
+		IdleTimeout:  time.Second * 60,
+		Handler:      serveMux,
+	}
+
+	go func() {
+		panic(srv.ListenAndServe())
+	}()
+
+	// Create channel for shutdown signals.
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt)
+	signal.Notify(stop, syscall.SIGTERM)
+	signal.Notify(stop, syscall.SIGINT)
+
+	//Recieve shutdown signals.
+	<-stop
+
+	// Disconnect database client
+	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := client.Disconnect(ctx); err != nil {
 		log.Fatal(err)
+	}
+
+	ctx, cancel = context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Printf("Error shutting down server %s", err)
+	} else {
+		log.Println("Server gracefully stopped")
 	}
 }
