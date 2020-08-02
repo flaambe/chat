@@ -100,6 +100,31 @@ func TestAddChat(t *testing.T) {
 	chatResponse, err := testObj.AddChat(chatRequest)
 	assert.NoError(err)
 	assert.Equal(chatModel.ID.Hex(), chatResponse.ID)
+
+	chatErrRequest := view.NewChatRequest{
+		Name:    chatModel.Name,
+		UsersID: []string{"incorrect id"},
+	}
+	userErrRepoMock := new(mocks.UserRepository)
+	userErrRepoMock.On("FindUserByID", "incorrect id").Return(model.User{}, errors.New("incorrect id"))
+	testObj = service.NewChatService(userErrRepoMock, chatRepoMock, messageRepoMock)
+	chatResponse, err = testObj.AddChat(chatErrRequest)
+	assert.Error(err)
+	var responseError *errs.ResponseError
+	if errors.As(err, &responseError) {
+		assert.Equal(404, responseError.Status)
+	}
+	assert.Equal("", chatResponse.ID)
+
+	chatErrRepoMock := new(mocks.ChatRepository)
+	chatErrRepoMock.On("InsertChat", chatModel.Name, chatModel.Users).Return("", errors.New("internal db error"))
+	testObj = service.NewChatService(userRepoMock, chatErrRepoMock, messageRepoMock)
+	chatResponse, err = testObj.AddChat(chatRequest)
+	assert.Error(err)
+	if errors.As(err, &responseError) {
+		assert.Equal(500, responseError.Status)
+	}
+	assert.Equal("", chatResponse.ID)
 }
 
 func TestAddMessage(t *testing.T) {
