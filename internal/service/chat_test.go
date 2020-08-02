@@ -205,4 +205,28 @@ func TestGetMessages(t *testing.T) {
 	assert.Equal(messageModel.Author.Hex(), messagesResponse[0].AuthorID)
 	assert.Equal(messageModel.Text, messagesResponse[0].Text)
 	assert.Equal(messageModel.CreatedAt.Time().String(), messagesResponse[0].CreatedAt)
+
+	messagesErrRequest := view.MessagesRequest{
+		СhatID: "incorrect id",
+	}
+	chatErrRepoMock := new(mocks.ChatRepository)
+	chatErrRepoMock.On("FindChatByID", "incorrect id").Return(model.Chat{}, errors.New("incorrect id"))
+	testObj = service.NewChatService(userRepoMock, chatErrRepoMock, messageRepoMock)
+	messagesResponse, err = testObj.GetMessages(messagesErrRequest)
+	assert.Error(err)
+	var responseError *errs.ResponseError
+	if errors.As(err, &responseError) {
+		assert.Equal(404, responseError.Status)
+	}
+	assert.Empty(messagesResponse)
+
+	messageErrRepoMock := new(mocks.MessageRepository)
+	messageErrRepoMock.On("FindMessages", chatModel).Return([]model.Message{}, errors.New("internal db error"))
+	testObj = service.NewChatService(userRepoMock, chatRepoMock, messageErrRepoMock)
+	messagesResponse, err = testObj.GetMessages(messagesRequest)
+	assert.Error(err)
+	if errors.As(err, &responseError) {
+		assert.Equal(404, responseError.Status)
+	}
+	assert.Empty(messagesResponse)
 }
