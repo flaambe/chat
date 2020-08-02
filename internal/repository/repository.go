@@ -54,7 +54,7 @@ func (u *UserRepository) FindUserByID(id string) (model.User, error) {
 func (u *UserRepository) InsertUser(name string) (string, error) {
 	result, err := u.Db.Collection("users").InsertOne(context.TODO(), bson.M{"username": name})
 	if err != nil {
-		return "-1", err
+		return "", err
 	}
 
 	oid, _ := result.InsertedID.(primitive.ObjectID)

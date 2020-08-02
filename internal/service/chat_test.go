@@ -1,12 +1,14 @@
 package service_test
 
 import (
+	"errors"
 	"os"
 	"testing"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
+	"github.com/flaambe/avito/internal/errs"
 	"github.com/flaambe/avito/internal/model"
 	"github.com/flaambe/avito/internal/repository/mocks"
 	"github.com/flaambe/avito/internal/service"
@@ -72,6 +74,18 @@ func TestAddUser(t *testing.T) {
 	userResponse, err := testObj.AddUser(userRequest)
 	assert.NoError(err)
 	assert.Equal(userModel.ID.Hex(), userResponse.ID)
+
+	userErrRepoMock := new(mocks.UserRepository)
+	userErrRepoMock.On("InsertUser", userModel.UserName).Return("-1", errors.New("internal db error"))
+
+	testObj = service.NewChatService(userErrRepoMock, chatRepoMock, messageRepoMock)
+	userResponse, err = testObj.AddUser(userRequest)
+	assert.Error(err)
+	var responseError *errs.ResponseError
+	if errors.As(err, &responseError) {
+		assert.Equal(500, responseError.Status)
+	}
+	assert.Equal("", userResponse.ID)
 }
 
 func TestAddChat(t *testing.T) {
