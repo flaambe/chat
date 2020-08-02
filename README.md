@@ -1,4 +1,5 @@
-![Build](https://github.com/flaambe/chat/workflows/Go/badge.svg?branch=master)
+![Build](https://github.com/flaambe/chat/workflows/Build/badge.svg?branch=master)
+[![codecov](https://codecov.io/gh/flaambe/chat/branch/master/graph/badge.svg)](https://codecov.io/gh/flaambe/chat)
 
 # Chat server
 Simple chat server with **Go** and **MongoDB**
